@@ -13,6 +13,10 @@ public class AppUserRepository {
     @PersistenceContext
     private EntityManager em;
 
+    AppUser findById(int id) {
+        return em.find(AppUser.class, id);
+    }
+
     void save(AppUser appUser) {
         em.persist(appUser);
     }

@@ -30,7 +30,7 @@ public class LibraryController {
     }
 
     @GetMapping("/queueMap")
-    public ResponseEntity<Map<Book, Queue<AppUser>>> queueMap() {
+    public ResponseEntity<Map<Integer, Queue<Integer>>> queueMap() {
         return ResponseEntity.ok(BorrowingService.getBookQueueMap());
     }
 
@@ -67,11 +67,13 @@ public class LibraryController {
     @PostMapping("/returnBook")
     public ResponseEntity<String> returnBook(@RequestBody RestRequest restRequest) {
         try {
-            String returned = BorrowingService.returnBook(restRequest.appUser, restRequest.book);
-            if (returned.equals(BorrowingStatus.RETURNED.name())) {
+            String returned = BorrowingService.returnBook(restRequest.appUserId, restRequest.bookId);
+            if (returned.equals(BorrowingStatus.RETURNED_SUCCESSFULLY.name())) {
                 return ResponseEntity.ok("Book returned successfully");
             } else if (returned.equals(BorrowingStatus.PASSED_TO_NEXT_USER.name())) {
                 return ResponseEntity.ok("Book returned successfully, passed to next user in queue");
+            } else if (returned.equals("BOOK_NOT_BORROWED_BY_USER")) {
+                return ResponseEntity.status(400).body("Book was not borrowed by this user");
             }
         } catch (Exception e) {
             e.printStackTrace();

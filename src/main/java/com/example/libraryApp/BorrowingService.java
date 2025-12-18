@@ -8,17 +8,20 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BorrowingService {
-    Map<Book, Queue<AppUser>> bookQueueMap;
+
+    Map<Integer, Queue<Integer>> bookQueueMap;
     BookRepository bookRepository;
     BorrowingRepository borrowingRepository;
+    AppUserRepository appUserRepository;
 
-    public BorrowingService(BookRepository bookRepository, BorrowingRepository borrowingRepository) {
+    public BorrowingService(BookRepository bookRepository, BorrowingRepository borrowingRepository, AppUserRepository appUserRepository) {
         this.bookQueueMap = new HashMap<>(); // todo update on app startup
         this.bookRepository = bookRepository;
         this.borrowingRepository = borrowingRepository;
+        this.appUserRepository = appUserRepository;
     }
 
-    public Map<Book, Queue<AppUser>> getBookQueueMap() {
+    public Map<Integer, Queue<Integer>> getBookQueueMap() {
         return bookQueueMap;
     }
 
@@ -45,34 +48,40 @@ public class BorrowingService {
             }
 
             // add to queue
-            if (bookQueueMap.containsKey(book)){ // todo dont add while already in queue
-                Queue<AppUser> appUserQueue = bookQueueMap.get(book);
-                appUserQueue.add(appUser);
+            if (bookQueueMap.containsKey(book.getId())){ // todo dont add while already in queue
+                Queue<Integer> appUserQueue = bookQueueMap.get(book.getId());
+                appUserQueue.add(appUser.getId());
             } else {
-                Queue<AppUser> appUserQueue = new PriorityQueue<>();
-                appUserQueue.add(appUser);
-                bookQueueMap.put(book, appUserQueue);
+                Queue<Integer> appUserQueue = new PriorityQueue<>();
+                appUserQueue.add(appUser.getId());
+                bookQueueMap.put(book.getId(), appUserQueue);
             }
             return BorrowingStatus.ADDED_TO_QUEUE.name();
 
         }
     }
 
-    public String returnBook(AppUser appUser, Book book) throws SQLException {
-        borrowingRepository.updateBorrowing(book.getId(), appUser.getId(),
+    public String returnBook(int appUserId, int bookId) throws SQLException {
+
+        if(!borrowingRepository.checkBorrowingStatus(bookId, appUserId).equals(BorrowingStatus.BORROWED.name())) {
+            return "BOOK_NOT_BORROWED_BY_USER";
+        }
+
+        borrowingRepository.updateBorrowing(bookId, appUserId,
                 new Date(System.currentTimeMillis()), BorrowingStatus.RETURNED);
+        Book book = bookRepository.findById(bookId);
 
         book.isAvailable = true;
         bookRepository.update(book);
 
-        if (bookQueueMap.containsKey(book) && !bookQueueMap.get(book).isEmpty()) {
-            Queue<AppUser> appUserQueue = bookQueueMap.get(book);
-            AppUser nextAppUser = appUserQueue.poll();
-            System.out.println("Passing to user " + nextAppUser.getId() + " book " + book.getId());
-            borrowBook(nextAppUser, book);
+        if (bookQueueMap.containsKey(bookId) && !bookQueueMap.get(bookId).isEmpty()) {
+            Queue<Integer> appUserQueue = bookQueueMap.get(bookId);
+            Integer nextAppUserId = appUserQueue.poll();
+            System.out.println("Passing to user " + nextAppUserId + " book " + bookId);
+            borrowBook(appUserRepository.findById(nextAppUserId), book);
             return BorrowingStatus.PASSED_TO_NEXT_USER.name();
         }
-        return BorrowingStatus.RETURNED.name();
+        return BorrowingStatus.RETURNED_SUCCESSFULLY.name();
     }
 
 }

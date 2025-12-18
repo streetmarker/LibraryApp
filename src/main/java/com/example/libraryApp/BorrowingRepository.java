@@ -36,5 +36,20 @@ public class BorrowingRepository {
           .executeUpdate();
         return true;
     }
+    public String checkBorrowingStatus(int bookId, int userId) {
+        try {
+            Borrowing borrowing = em.createQuery("FROM Borrowing b WHERE b.bookId = :bookId AND b.userId = :userId AND b.status = 'BORROWED'", Borrowing.class)
+                    .setParameter("bookId", bookId)
+                    .setParameter("userId", userId)
+                    .getSingleResult();
+            if (borrowing != null) {
+                return borrowing.status;
+            } else {
+                return "NOT_BORROWED";
+            }
+        } catch (Exception e) {
+            return "NOT_BORROWED";
+        }
+    }
     
 }

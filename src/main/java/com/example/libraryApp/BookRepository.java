@@ -15,7 +15,7 @@ public class BookRepository {
     @PersistenceContext
     private EntityManager em;
 
-    public Book findById(Long id) {
+    public Book findById(int id) {
         return em.find(Book.class, id);
     }
 
