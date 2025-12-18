@@ -1,0 +1,5 @@
+package com.example.libraryApp;
+
+public enum BorrowingStatus {
+    BORROWED, IN_LIBRARY, RETURNED, BORROWED_SUCCESSFULLY, BORROWED_BY_CURRENT_USER, ADDED_TO_QUEUE, PASSED_TO_NEXT_USER
+}
