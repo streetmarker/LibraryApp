@@ -1,10 +1,17 @@
-package com.example.libraryApp;
+package com.example.libraryApp.service;
 
 import java.sql.SQLException;
 import java.sql.Date;
 import java.util.*;
 
 import org.springframework.stereotype.Service;
+
+import com.example.libraryApp.constans.BorrowingStatus;
+import com.example.libraryApp.model.Book;
+import com.example.libraryApp.model.Borrowing;
+import com.example.libraryApp.repository.AppUserRepository;
+import com.example.libraryApp.repository.BookRepository;
+import com.example.libraryApp.repository.BorrowingRepository;
 
 @Service
 public class BorrowingService {
@@ -25,36 +32,37 @@ public class BorrowingService {
         return bookQueueMap;
     }
 
-    public String borrowBook(AppUser appUser, Book book) {
+    public String borrowBook(int appUserId, int bookId) {
         boolean isBookFree;
         try {
-            isBookFree = bookRepository.isBookFree(book.getId());
+            isBookFree = bookRepository.isBookFree(bookId);
         } catch (Exception e) {
             e.printStackTrace();
             return BorrowingStatus.BORROWED.name();
         }
         if(isBookFree){
-                borrowingRepository.save(new Borrowing(book.getId(), appUser.getId(),
+                borrowingRepository.save(new Borrowing(bookId, appUserId,
                 new Date(System.currentTimeMillis()), null, BorrowingStatus.BORROWED.name()));
-
-                book.isAvailable = false;
+                
+                Book book = bookRepository.findById(bookId);
+                book.setIsAvailable(false);
                 bookRepository.update(book);
                 return BorrowingStatus.BORROWED_SUCCESSFULLY.name();
         } else {
             // check if already borrowed by the same user
-            Borrowing existingBorrowing = borrowingRepository.findByBookId(book.getId());
-            if (existingBorrowing != null && existingBorrowing.userId == appUser.getId()) {
+            Borrowing existingBorrowing = borrowingRepository.findByBookId(bookId);
+            if (existingBorrowing != null && existingBorrowing.getAppUserId() == appUserId) {
                 return BorrowingStatus.BORROWED_BY_CURRENT_USER.name();
             }
 
             // add to queue
-            if (bookQueueMap.containsKey(book.getId())){ // todo dont add while already in queue
-                Queue<Integer> appUserQueue = bookQueueMap.get(book.getId());
-                appUserQueue.add(appUser.getId());
+            if (bookQueueMap.containsKey(bookId)){ // todo dont add while already in queue
+                Queue<Integer> appUserQueue = bookQueueMap.get(bookId);
+                appUserQueue.add(appUserId);
             } else {
                 Queue<Integer> appUserQueue = new PriorityQueue<>();
-                appUserQueue.add(appUser.getId());
-                bookQueueMap.put(book.getId(), appUserQueue);
+                appUserQueue.add(appUserId);
+                bookQueueMap.put(bookId, appUserQueue);
             }
             return BorrowingStatus.ADDED_TO_QUEUE.name();
 
@@ -71,14 +79,14 @@ public class BorrowingService {
                 new Date(System.currentTimeMillis()), BorrowingStatus.RETURNED);
         Book book = bookRepository.findById(bookId);
 
-        book.isAvailable = true;
+        book.setIsAvailable(true);
         bookRepository.update(book);
 
         if (bookQueueMap.containsKey(bookId) && !bookQueueMap.get(bookId).isEmpty()) {
             Queue<Integer> appUserQueue = bookQueueMap.get(bookId);
             Integer nextAppUserId = appUserQueue.poll();
             System.out.println("Passing to user " + nextAppUserId + " book " + bookId);
-            borrowBook(appUserRepository.findById(nextAppUserId), book);
+            borrowBook(nextAppUserId, bookId);
             return BorrowingStatus.PASSED_TO_NEXT_USER.name();
         }
         return BorrowingStatus.RETURNED_SUCCESSFULLY.name();

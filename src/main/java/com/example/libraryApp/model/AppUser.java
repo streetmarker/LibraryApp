@@ -1,4 +1,4 @@
-package com.example.libraryApp;
+package com.example.libraryApp.model;
 
 import jakarta.persistence.*;
 
@@ -8,13 +8,16 @@ public class AppUser implements Comparable<AppUser>{
 
     @Id
     @GeneratedValue
-    int id;
+    private int id;
+
     @Column(name = "first_name")
-    String firstName;
+    private String firstName;
+
     @Column(name = "last_name")
-    String lastName;
+    private String lastName;
+
     @Column(name = "year_born")
-    Integer yearBorn;
+    private Integer yearBorn;
 
     public AppUser() {
     }

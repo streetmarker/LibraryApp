@@ -1,4 +1,4 @@
-package com.example.libraryApp;
+package com.example.libraryApp.model;
 
 import jakarta.persistence.*;
 
@@ -12,13 +12,13 @@ public class Book {
 
     @Id
     @GeneratedValue
-    int id;
+    private int id;
 
-    String title;
+    private String title;
 
-    Integer year;
+    private Integer year;
     
-    String author;
+    private String author;
 
     @ColumnDefault("true")
     @Column(name = "is_available")
@@ -54,11 +54,11 @@ public class Book {
         return author;
     }
 
-    public boolean isAvailable() {
+    public boolean getIsAvailable() {
         return isAvailable;
     }
 
-    public void setAvailable(boolean available) {
+    public void setIsAvailable(boolean available) {
         isAvailable = available;
     }
 

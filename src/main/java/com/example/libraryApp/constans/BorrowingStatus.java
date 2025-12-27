@@ -1,4 +1,4 @@
-package com.example.libraryApp;
+package com.example.libraryApp.constans;
 
 public enum BorrowingStatus {
     BORROWED, IN_LIBRARY, RETURNED, RETURNED_SUCCESSFULLY, BORROWED_SUCCESSFULLY, BORROWED_BY_CURRENT_USER, ADDED_TO_QUEUE, PASSED_TO_NEXT_USER

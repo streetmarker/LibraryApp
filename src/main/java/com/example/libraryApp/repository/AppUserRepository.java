@@ -1,7 +1,11 @@
-package com.example.libraryApp;
+package com.example.libraryApp.repository;
 
 import java.util.*;
 import org.springframework.stereotype.Repository;
+
+import com.example.libraryApp.model.AppUser;
+import com.example.libraryApp.model.Book;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -13,25 +17,22 @@ public class AppUserRepository {
     @PersistenceContext
     private EntityManager em;
 
-    AppUser findById(int id) {
+    public AppUser findById(int id) {
         return em.find(AppUser.class, id);
     }
 
-    void save(AppUser appUser) {
+    public void save(AppUser appUser) {
         em.persist(appUser);
     }
 
-    void saveAll(Collection<AppUser> appUsers) {
+    public void saveAll(Collection<AppUser> appUsers) {
         for (AppUser appUser : appUsers) {
             em.persist(appUser);
         }
     }
 
-    void listAll() {
-        List<AppUser> appUsers = em.createQuery("FROM AppUser", AppUser.class).getResultList();
-        for (AppUser appUser : appUsers) {
-            System.out.println(appUser);
-        }
+    public List<AppUser> findAll() {
+        return em.createQuery("FROM AppUser", AppUser.class).getResultList();
     }
 
 }

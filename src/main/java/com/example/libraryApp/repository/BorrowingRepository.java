@@ -1,9 +1,12 @@
-package com.example.libraryApp;
+package com.example.libraryApp.repository;
 
 import java.sql.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
+
+import com.example.libraryApp.constans.BorrowingStatus;
+import com.example.libraryApp.model.Borrowing;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -43,7 +46,7 @@ public class BorrowingRepository {
                     .setParameter("userId", userId)
                     .getSingleResult();
             if (borrowing != null) {
-                return borrowing.status;
+                return borrowing.getStatus();
             } else {
                 return "NOT_BORROWED";
             }

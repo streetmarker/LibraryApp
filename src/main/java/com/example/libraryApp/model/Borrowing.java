@@ -1,4 +1,4 @@
-package com.example.libraryApp;
+package com.example.libraryApp.model;
 
 import jakarta.persistence.*;
 import java.util.Date;
@@ -9,12 +9,17 @@ public class Borrowing {
 
     @Id
     @GeneratedValue
-    int id;
-    int bookId;
-    int userId;
-    Date borrowDate;
-    Date returnDate;
-    String status;
+    private int id;
+
+    private int bookId;
+
+    private int userId;
+
+    private Date borrowDate;
+
+    private Date returnDate;
+
+    private String status;
 
     public Borrowing() {
 
@@ -38,6 +43,10 @@ public class Borrowing {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public int getAppUserId(){
+        return userId;
     }
 
     public void setBorrowDate(Date borrowDate) {
